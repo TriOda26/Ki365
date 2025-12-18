@@ -289,7 +289,7 @@ export default function DashboardContnet() {
 			return(
 			<>
 				<div className="flex flex-col justify-center items-center gap-4">
-					<p>Errors!!!</p>
+					<p>There were errors loading this page. Try again in a few moments...</p>
 				</div>
 			</>
 			)

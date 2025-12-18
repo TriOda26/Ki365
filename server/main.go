@@ -163,8 +163,6 @@ func main() {
 		s.TracespaceExecutablePath = filepath.Join(s.ConditionalBinPrefix, s.TracespaceExecutablePath)
 	}
 
-	s.CreateDB()
-
 	// TODO: Check all dependencies exist
 	// TODO: Check all dependencies exist if haven't periodically
 
@@ -189,6 +187,7 @@ func main() {
 		if c || *bypassConfirm {
 			log.Println("Creating data directory...")
 			err := abatement.GenerateDataFolder(s.Dirs().DataDir)
+			s.CreateDB()
 			if err != nil {
 				log.Fatal("Failed to create data directory.")
 			}

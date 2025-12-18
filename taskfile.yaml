@@ -31,7 +31,6 @@ tasks:
   setup:
     desc: Setup development environment
     cmds:
-      - git submodule update --init --progress
       - go run ./scripts/setup
       - go run ./scripts/examples
 

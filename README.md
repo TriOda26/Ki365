@@ -93,7 +93,6 @@ To download all the development sources, run:
 ```
 git clone https://github.com/Ki365/Ki365.git
 cd Ki365
-task setup
 ```
 
 To ensure all dependencies are installed for local development, run:
@@ -103,6 +102,12 @@ To ensure all dependencies are installed for local development, run:
 ```
 task check
 ```
+
+To ensure demo files and the SSH connection are installed and established correctly run the following: 
+```
+task setup
+```
+
 
 To start the development environment, run:
 ```

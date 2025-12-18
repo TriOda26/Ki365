@@ -3,65 +3,73 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
+	"io/fs"
+	"log"
 	"math/rand"
 	"os"
 )
 
-// var s = []string{
-// 	"KI365_KICAD_PASSWORD",
-// 	"KI365_TRACESPACE_PASSWORD",
-// }
+type smap struct {
+	k string
+	v string
+}
+
+var s = []string{
+	"KI365_KICAD_PASSWORD",
+}
 
 func main() {
-	// Parameters to change
+	if fileExists(".env") {
+		log.Println("WARNING: .env already exists! Only printing generated passwords:")
+		generateRandomizedPasswords()
+	} else {
+		log.Println("Creating .env file with generated passwords")
 
-	err := copyFile("./.env.template", "./.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	err = randomizePasswords()
-	if err != nil {
-		fmt.Println(err)
-	}
+		var m = []smap{}
 
+		for _, val := range s {
+			p, _ := generatePassword(20, true, true, true)
+			m = append(m, smap{val, p})
+		}
+
+		file, err := os.OpenFile(".env", os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		for i, val := range m {
+			fmt.Printf("Pos %d, key %s, vak %s\n", i, val.k, val.v)
+			s, b := fmt.Fprintf(file, "%s='%s'\n", val.k, val.v)
+			if s == 0 {
+				log.Println("WARNING: Printed zero length password, check .env for correct syntax!")
+			}
+			if b != nil {
+				log.Fatal(err)
+			}
+		}
+
+		log.Printf("Wrote .env file with %d generated passwords\n", len(m))
+	}
 }
 
-func copyFile(src, dest string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
 
-	out, err := os.OpenFile(dest, os.O_CREATE|os.O_EXCL, 0644)
-	if err != nil {
-		return err
+	if errors.Is(err, fs.ErrNotExist) {
+		return false
 	}
-	defer out.Close()
 
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-	return out.Close()
+	return err == nil && !info.IsDir()
 }
 
-func randomizePasswords() error {
-	// TODO: Change this to change file automatically
-	// f, err := os.Open(s)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer f.Close()
-
-	fmt.Println("Generating random passwords:")
+func generateRandomizedPasswords() error {
 	for i := 0; i < 3; i++ {
 		s, err := generatePassword(20, true, true, true)
 		if err != nil {
 			return err
 		}
-		fmt.Println(s)
+		log.Println(s)
 	}
 	return nil
 }
@@ -74,7 +82,9 @@ func generatePassword(length int, useLetters bool, useSpecial bool, useNum bool)
 		charset += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	}
 	if useSpecial {
-		charset += "!@#$%^&*()_+-=[]{}\\|;':\",.<>/?`~"
+		// safe subset of special characters
+		// charset += "!@#$%^&*()_+-=[]{}\\|;':\",.<>/?`~"
+		charset += "!@#%*()_+-=[]{}:,./?~"
 	}
 	if useNum {
 		charset += "0123456789"
